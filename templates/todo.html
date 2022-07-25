@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html class="diagonal-gradient" , lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>To Do List</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Amita&family=Creepster&family=Dancing+Script&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="../static/css/styles.css">
+</head>
+<body>
+{% import "bootstrap/wtf.html" as wtf %}
+
+
+<div class="box" style="margin: 1px auto; background : linear-gradient(to bottom left, #362620 48%,#62a173)" id="heading">
+    <h2 style="background-color: black; color: #804633 ; text-align: center; !important"> {{date_time}} </h2>
+    <h1 style="font-size: 40px" > TODAY's To-Do </h1>
+    <h2 style=" color: #b02046 ; text-align: right; !important"> {{incomplete_task_count}}/{{tasks|length}} Tasks Left</h2>
+</div>
+
+<div class="box" style="background : linear-gradient(to top left, #362620 30%,#62a173)">
+    <h2 style=" color: #804633 ; text-align: center; !important"> COUNTDOWN TILL END of
+        {{current_year}}</h2>
+    <!--    <h3 style=" color: #804633 ; text-align: left; !important"> You have... </h3>-->
+    <h3 style="font-size: 35px; text-decoration: underline; color: #a81839 ; text-align: center; !important"> {{ months }} MONTHS : {{
+        weeks }} WEEKS : {{ days }} DAYS </h3>
+    <h3 style="font-size: 35px; text-decoration: underline; color: #a81839 ; text-align: center; "> {{ hours }} HR : {{ minutes }} MIN :
+        {{seconds}} SEC </h3>
+    <h2 style=" color: #804633 ; text-align: center; !important">... remaining</h2>
+    <h2 style=" color: #b02046 ; text-align: right; !important"> to complete your aspirations</h2>
+</div>
+
+<!-- Check all tasks-->
+<div class="box" style="margin: 5px auto;">
+    <h3 style="color: #804633; font-size: 25px; text-align: center;">FAVORITE ALL</h3>
+    <!-- BONUS:   Change ❤ to 💔 icon based on all item state want opposite of all favorited state-->
+    {% if not all_favorited %}
+        <a href="{{url_for('to_do_favorite_task',id=0)}}"
+           style="font-size: 40px; text-align: left"> ❤️</a>
+    {% elif all_favorited %}
+        <a href="{{url_for('to_do_favorite_task',id=0)}}"
+       style="font-size: 40px; text-align: left"> 💔️ </a>
+    {% endif %}
+</div>
+<div class="box" style="margin: 20px auto;">
+    <h3 style="color: #804633; font-size: 25px; text-align: center;">CHECK ALL</h3>
+    <!-- BONUS:   Change ☑ to ☐ icon based on all item state-->
+    <a href="{{url_for('to_do_complete_task',id=0)}}"
+       style="font-size: 30px; text-align: left"> ☐️</a>
+</div>
+
+
+<div class="box" style="min-height: 50vh;">
+
+    <!-- Add all database items #GETTING REALLY MESSY AND FRUSTRATING-->
+    {% for i in range(tasks|length) %}
+    <div class="item">
+        <!--        <input type="checkbox" name="{{i}}">-->
+
+        <!--tasks[i][0]: id | tasks[i][1]: task | tasks[i][2]: completed | tasks[i][3]: task_hidden | tasks[i][4]: task_favorite |tasks[i][6]: task_edit-->
+        <!--1. HIDE ALL MARKED TASKS-->
+        <!--if task_hidden is True,-->
+        {% if tasks[i][3]== True: %}
+            <!--BUT TASK NOT COMPLETED, -->
+            <!--Set checkbox shape according to incomplete-->
+            {% if tasks[i][2]== False: %}
+                <!--Set favorite emoticon shape according to favorited state-->
+                {% if tasks[i][4]== True: %}
+                <a href="{{url_for('to_do_favorite_task',id=tasks[i][0])}}"> ❤️ </a>
+                <a href="{{url_for('to_do_complete_task',id=tasks[i][0])}}"
+                   style="font-size: 20px; text-align :right !important; "> ☐️</a>
+
+                {% else %}
+                <a href="{{url_for('to_do_favorite_task',id=tasks[i][0])}}"> 💔 </a>
+                <a href="{{url_for('to_do_complete_task',id=tasks[i][0])}}"
+                   style="font-size: 20px; text-align :right !important; "> ☐️</a>
+
+                {% endif %}
+
+                <!--IF TASK COMPLETED,break EVEN THOUGH ITEM NOT SENT TO HTML-->
+                {% else %}
+                {{break}}
+                {% endif %}
+
+            <!--If not task_hidden (task_hidden False) -->
+            <!--Set item according to whether completed or not-->
+            <!--TASK NOT COMPLETED-->
+            {% if tasks[i][2]== False: %}
+                {% if tasks[i][7] == False: %}
+                    <a href="{{url_for('to_do_date',id=tasks[i][0])}}" class="date">{{tasks[i][5].strftime("%d %b")}}</a>
+                {% else %}
+                    <form class="item control-label no-label" action="/date_task/{{tasks[i][0]}}" method="post">
+                    {{ wtf.quick_form(date_form, novalidate = True) }}
+                {% endif %}
+
+                {% if tasks[i][6] == False: %}
+                <a href="{{url_for('to_do_edit_task',id=tasks[i][0])}}" class="task">{{tasks[i][1]}}</a>
+                {% else %}
+                <form class="item control-label no-label" action="/edit_task/{{tasks[i][0]}}" method="post">
+                {{ wtf.quick_form(edit_form, novalidate = True) }}
+                {% endif %}
+
+            <!--if hidden, dont show item-->
+            {% else %}
+            {{break}}
+            {% endif %}
+
+        <!--2. SHOW ALL MARKED TASKS-->
+        <!--TASK COMPLETED-->
+        {%else %}
+            {% if tasks[i][2]== True: %}
+            <!--TASK COMPLETED CHECKMARK-->
+                <!--FAVORITE ITEM-->
+                {% if tasks[i][4]== True: %}
+                    <a href="{{url_for('to_do_favorite_task',id=tasks[i][0])}}"> ❤️ </a>
+                    <a href="{{url_for('to_do_complete_task',id=tasks[i][0])}}"
+               style="font-size: 20px; text-align :right !important; "> ☑️</a>
+
+                {% else: %}
+                    <a href="{{url_for('to_do_favorite_task',id=tasks[i][0])}}"> 💔 </a>
+                    <a href="{{url_for('to_do_complete_task',id=tasks[i][0])}}"
+               style="font-size: 20px; text-align :right !important; "> ☑️</a>
+
+                {% endif %}
+
+            {% else: %}
+                {% if tasks[i][4]== True: %}
+                    <a href="{{url_for('to_do_favorite_task',id=tasks[i][0])}}"> ❤️ </a>
+                    <a href="{{url_for('to_do_complete_task',id=tasks[i][0])}}"
+               style="font-size: 20px; text-align :right !important; "> ☐️</a>
+
+                {% else: %}
+                    <a href="{{url_for('to_do_favorite_task',id=tasks[i][0])}}"> 💔 </a>
+                    <a href="{{url_for('to_do_complete_task',id=tasks[i][0])}}"
+               style="font-size: 20px; text-align :right !important; "> ☐️</a>
+
+                {% endif %}
+            {% endif %}
+
+            <!--MARKED ITEM LINETHROUGH-->
+            {% if tasks[i][2]== True: %}
+                {% if tasks[i][7] == False: %}
+                    <a href="{{url_for('to_do_date',id=tasks[i][0])}}" class="date">{{tasks[i][5].strftime("%d %b")}}</a>
+                {% else %}
+                    <form class="item control-label no-label" action="/date_task/{{tasks[i][0]}}" method="post">
+                    {{ wtf.quick_form(date_form, novalidate = True) }}
+                {% endif %}
+                {% if tasks[i][6] == False: %}
+                <a href="{{url_for('to_do_edit_task',id=tasks[i][0])}}" class="task" style="text-decoration: line-through 6px; text-decoration-color: #804633;">{{tasks[i][1]}}</a>
+                {% else %}
+                <form class="item control-label no-label" action="/edit_task/{{tasks[i][0]}}" method="post">
+                {{ wtf.quick_form(edit_form, novalidate = True) }}
+                {% endif %}
+
+
+            <!--NORMAL ITEM-->
+            {% else: %}
+                {% if tasks[i][7] == False: %}
+                    <a href="{{url_for('to_do_date',id=tasks[i][0])}}" class="date">{{tasks[i][5].strftime("%d %b")}}</a>
+                {% else %}
+                    <form class="item control-label no-label" action="/date_task/{{tasks[i][0]}}" method="post">
+                    {{ wtf.quick_form(date_form, novalidate = True) }}
+                {% endif %}
+                {% if tasks[i][6] == False: %}
+                <a href="{{url_for('to_do_edit_task',id=tasks[i][0])}}" class="task">{{tasks[i][1]}}</a>
+                {% else %}
+                <form class="item control-label no-label" action="/edit_task/{{tasks[i][0]}}" method="post">
+                {{ wtf.quick_form(edit_form, novalidate = True) }}
+                {% endif %}
+
+            {% endif %}
+
+        {% endif %}
+    </div>
+    {% endfor %}
+
+    <form class="item control-label no-label btn btn-default" style="text-align: center;margin-left: 90px;" action="/" method="post">
+        {{ wtf.quick_form(form, novalidate = True) }}
+        <!--        <input type="text" name="newItem" placeholder="Add To-Do?" autocomplete="off" style="padding-right:0; margin-left: 0 !important">-->
+        <!--        <button type="submit" name="list">+</button>-->
+    </form>
+
+</div>
+
+<div class="box" style="background : linear-gradient(to bottom right, #362620 50%,#62a173)">
+
+    <a href="{{url_for('to_do_hide_task')}}"
+       style="font-size: 35px; text-decoration: underline, bold; text-align :right !important; "> HIDE?</a>
+    <a href="{{url_for('to_do_show_task')}}"
+       style="font-size: 35px; text-decoration: underline, bold; text-align :right !important; "> SHOW?</a>
+    <a href="{{url_for('to_do_delete_task')}}"
+       style="bottom:0; font-size: 23px; font-family: 'Dancing Script', cursive; text-decoration: italic; text-align :right !important; "> Clear all done</a>
+</div>
+
+</body>
+
+<footer>
+    Remember. The journey of a million miles starts with a single step.<br>
+    Perseverance is the key to anything.
+
+</footer>
+
+</html>
